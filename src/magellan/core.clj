@@ -145,7 +145,15 @@
                      (.setCompressionType "LZW")
                      (.setCompressionQuality 0.5)
                      (.setTilingMode GeoTiffWriteParams/MODE_EXPLICIT)
-                     (.setTiling 256 16))))
+                     (.setTiling 256 16)
+                     )))
+    ;; (println "----------writing----------------------")
+    ;; (let [band (first (.getSampleDimensions (:coverage raster)))]
+    ;;   (prn "band index 0" (.getSampleDimension (:coverage raster) 0))
+    ;;   (prn "first band" band)
+    ;;   (prn "getRange: " (.getRange band))
+    ;;   (prn "getCategories" (.getCategories band))
+    ;;   (println "----------end write----------------------"))
     ;; Write the GeoTIFF to disk
     (try (.write writer
                  (:coverage raster)

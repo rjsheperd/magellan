@@ -40,20 +40,21 @@
 (defn describe-band [^GridSampleDimension band]
   {:description (str (.getDescription band))
    :type        (str (.getSampleDimensionType band))
-   :min         (.getMinimum (.getRange band))
-   :max         (.getMaximum (.getRange band))
+   ;; :min         (.getMinimum (.getRange band))
+   ;; :max         (.getMaximum (.getRange band))
    :no-data     (.getNoDataValues band)
    :offset      (.getOffset band)
    :scale       (.getScale band)
    :units       (.getUnits band)
-   :categories  (reduce (fn [acc cat]
-                          (let [range (.getRange cat)]
-                            (assoc acc
-                                   (str (.getName cat))
-                                   {:min (.getMinimum range)
-                                    :max (.getMaximum range)})))
-                        {}
-                        (.getCategories band))})
+   ;; :categories  (reduce (fn [acc cat]
+   ;;                        (let [range (.getRange cat)]
+   ;;                          (assoc acc
+   ;;                                 (str (.getName cat))
+   ;;                                 {:min (.getMinimum range)
+   ;;                                  :max (.getMaximum range)})))
+   ;;                      {}
+   ;;                      (.getCategories band))
+   })
 
 (defn describe-raster [^Raster raster]
   (let [image    (describe-image (:image raster))

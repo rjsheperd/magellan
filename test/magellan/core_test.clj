@@ -1,7 +1,8 @@
 (ns magellan.core-test
   (:require [clojure.test :refer [deftest is use-fixtures testing]]
             [clojure.java.io :as io]
-            [magellan.core :as mg])
+            [magellan.core :as mg]
+            [magellan.raster.inspect :as inspect])
   (:import (org.geotools.geometry GeneralEnvelope Envelope2D)
            (org.geotools.referencing CRS)
            (org.geotools.coverage.grid GridCoverage2D)
@@ -180,3 +181,37 @@
       (mg/register-new-crs-definitions-from-properties-file! authority properties)
 
       (is (not (nil? (CRS/decode "CALFIRE:900914")))))))
+
+(deftest missing-category-test
+  (testing ""
+    (let [original-rast (mg/read-raster (in-file-path "SRS-EPSG-32610.tif"))
+          rast-info     (inspect/describe-raster original-rast)
+          envelope      (mg/make-envelope "EPSG:32610"
+                                          (get-in rast-info [:image :origin :x])
+                                          (get-in rast-info [:image :origin :y])
+                                          (get-in rast-info [:image :width])
+                                          (get-in rast-info [:image :height]))
+          matrix        (mapv #(into [] %) (first (inspect/extract-matrix original-rast)))
+          copy-rast     (mg/matrix-to-raster "copy" matrix envelope)]
+
+      (prn "-------------------------- Categories before write -----------------------------------------")
+      (prn "original:" (.getCategories (first (.getSampleDimensions (:coverage original-rast)))))
+      (prn "copy:" (.getCategories (first (.getSampleDimensions (:coverage copy-rast)))))
+
+      (is (= (.getCategories (first (.getSampleDimensions (:coverage copy-rast))))
+             (.getCategories (first (.getSampleDimensions (:coverage original-rast))))))
+
+      (prn (:image original-rast))
+      (prn (:image copy-rast))
+      ;; (inspect/show-raster original-rast)
+      ;; (inspect/show-raster copy-rast)
+      (let [_        (mg/write-raster original-rast (out-file-path "original.tif"))
+            _        (mg/write-raster copy-rast (out-file-path "copy.tif"))
+            original (mg/read-raster (out-file-path "original.tif"))
+            copy     (mg/read-raster (out-file-path"copy.tif"))]
+
+        (prn "---------------------- Categories after write and read -----------------------------------------")
+        (prn "original:"(.getCategories (first (.getSampleDimensions (:coverage original)))))
+        (prn "copy:" (.getCategories (first (.getSampleDimensions (:coverage copy)))))
+        (is (= (.getCategories (first (.getSampleDimensions (:coverage original))))
+               (.getCategories (first (.getSampleDimensions (:coverage copy))))))))))
